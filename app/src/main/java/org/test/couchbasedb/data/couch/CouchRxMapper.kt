@@ -8,6 +8,8 @@ import io.reactivex.Maybe
 import io.reactivex.Single
 import io.reactivex.rxkotlin.toObservable
 import org.test.couchbasedb.data.preferences.UserSession
+import org.test.couchbasedb.util.andEx
+import org.test.couchbasedb.util.equalEx
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Named
@@ -21,21 +23,21 @@ class CouchRxMapper @Inject constructor(private val db: Database
                                         , private val mapper: ObjectMapper) {
 
 
-    fun <T : Any> insert(doc: T): Single<String> = Single.create {
+    fun <T : CouchEntity> insert(doc: T): Single<String> = Single.create {
         val id = "${session.userId}.${UUID.randomUUID()}"
         val document = objectToDocument(doc, id)
         db.save(document)
         it.onSuccess(id)
     }
 
-    fun <T : Any> insertGenId(doc: T): Single<String> = Single.create {
+    fun <T : CouchEntity> insertGenId(doc: T): Single<String> = Single.create {
         val id = "${UUID.randomUUID()}"
         val document = objectToDocument(doc, id)
         db.save(document)
         it.onSuccess(id)
     }
 
-    fun <T : Any> update(id: String, doc: T): Single<Unit> = Single.create {
+    fun <T : CouchEntity> update(id: String, doc: T): Single<Unit> = Single.create {
         val document = objectToDocument(doc, id)
         db.save(document)
         it.onSuccess(Unit)
@@ -47,7 +49,7 @@ class CouchRxMapper @Inject constructor(private val db: Database
         it.onSuccess(Unit)
     }
 
-    fun <T : Any> oneById(id: String, kClass: KClass<T>): Maybe<T> = Maybe.create {
+    fun <T : CouchEntity> oneById(id: String, kClass: KClass<T>): Maybe<T> = Maybe.create {
         val doc = db.getDocument(id)
         if (doc != null) {
             val map = doc.toMap()
@@ -62,11 +64,11 @@ class CouchRxMapper @Inject constructor(private val db: Database
                     .firstElement()
 
 
-    fun <T : Any> oneByExp(expression: Expression, kClass: KClass<T>): Maybe<T> = Single.create<ResultSet> {
+    fun <T : CouchEntity> oneByExp(expression: Expression, kClass: KClass<T>): Maybe<T> = Single.create<ResultSet> {
         val query = QueryBuilder
                 .select(SelectResult.all(), SelectResult.expression(Meta.id), SelectResult.expression(Meta.sequence))
                 .from(DataSource.database(db))
-                .where(expression)
+                .where(expression andEx ("type" equalEx kClass.simpleName.toString()))
 
         it.onSuccess(query.execute())
     }
@@ -87,7 +89,7 @@ class CouchRxMapper @Inject constructor(private val db: Database
         val query = QueryBuilder
                 .select(SelectResult.all(), SelectResult.expression(Meta.id), SelectResult.expression(Meta.sequence))
                 .from(DataSource.database(db))
-                .where(expression)
+                .where(expression andEx ("type" equalEx kClass.simpleName.toString()))
 
         it.onSuccess(query.execute())
     }

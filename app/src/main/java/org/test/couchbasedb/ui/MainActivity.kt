@@ -1,15 +1,12 @@
 package org.test.couchbasedb.ui
 
 import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-import io.reactivex.rxkotlin.subscribeBy
 import org.test.couchbasedb.R
-import org.test.couchbasedb.data.Bovine
-import org.test.couchbasedb.data.BovineOwner
+import org.test.couchbasedb.data.model.Bovine
+import org.test.couchbasedb.data.model.BovineOwner
 import org.test.couchbasedb.di.Injectable
 import org.test.couchbasedb.util.LifeDisposable
 import org.test.couchbasedb.util.buildViewModel
