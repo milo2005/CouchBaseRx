@@ -28,6 +28,7 @@ class CouchRxMapper @Inject constructor(private val db: Database
         val document = objectToDocument(doc, id)
         db.save(document)
         it.onSuccess(id)
+
     }
 
     fun <T : CouchEntity> insertGenId(doc: T): Single<String> = Single.create {
@@ -105,11 +106,14 @@ class CouchRxMapper @Inject constructor(private val db: Database
 
     private fun objectToDocument(obj: Any, id: String): MutableDocument {
         val map = mapper.convertValue(obj, Map::class.java) as MutableMap<String, Any>
+        if(map.contains("_id")) map.remove("_id")
         return MutableDocument(id, map)
     }
 
     private fun objectToMap(obj: Any): Map<String, Any> {
-        return mapper.convertValue(obj, Map::class.java) as Map<String, Any>
+        val map = mapper.convertValue(obj, Map::class.java) as MutableMap<String, Any>
+        map.remove("_id")
+        return map
     }
 
 

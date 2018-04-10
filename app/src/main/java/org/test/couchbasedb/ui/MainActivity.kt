@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModelProvider
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import io.reactivex.rxkotlin.subscribeBy
 import org.test.couchbasedb.R
 import org.test.couchbasedb.data.model.Bovine
 import org.test.couchbasedb.data.model.BovineOwner
@@ -27,32 +28,20 @@ class MainActivity : AppCompatActivity(), Injectable {
 
         val bovine = Bovine("Lupita", "Leche", BovineOwner("Dar", "301"))
 
-        /*dis add viewModel.insert(bovine)
-                .map {
-                    bovine._id = it
-                    it
-                }
+        viewModel.insert(bovine)
                 .flatMapMaybe { viewModel.getById(it) }
-                .flatMapSingle {
-                    it.nombre = "lupita 3"
-                    viewModel.update(it, "nombre")
-                }
-                .flatMapMaybe { viewModel.getById(bovine._id!!) }
                 .subscribeBy(
-                        onComplete = { Log.i("COUCHDB", "No se encontro") },
                         onSuccess = {
-                            Log.i("COUCHDB", "$it")
+                            Log.i("COUCH", "success")
                         },
-                        onError = { Log.i("COUCHDB", it.message) }
+                        onComplete = {
+                            Log.i("COUCH", "complete")
+                        },
+                        onError = {
+                            Log.i("COUCH", "error")
+                        }
 
-                )*/
-
-
-        dis add viewModel.getByProposito("Leche")
-                .subscribe {
-                    res->
-                    Log.i("EPA", "${res.size}")
-                }
+                )
 
     }
 }
