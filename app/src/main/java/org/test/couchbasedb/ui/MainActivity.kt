@@ -30,18 +30,14 @@ class MainActivity : AppCompatActivity(), Injectable {
 
         viewModel.insert(bovine)
                 .flatMapMaybe { viewModel.getById(it) }
+                .flatMapSingle { viewModel.getByOwnerName("Fer") }
                 .subscribeBy(
-                        onSuccess = {
-                            Log.i("COUCH", "success")
-                        },
-                        onComplete = {
-                            Log.i("COUCH", "complete")
-                        },
                         onError = {
-                            Log.i("COUCH", "error")
-                        }
-
+                            Log.i("Lupita", "")},
+                        onSuccess = {
+                            Log.i("Lupita", "")}
                 )
+
 
     }
 }
