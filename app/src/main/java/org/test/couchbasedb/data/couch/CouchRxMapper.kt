@@ -143,8 +143,9 @@ class CouchRxMapper @Inject constructor(private val db: Database,
             Maybe.create<InputStream> {
                 try {
                     val doc = db.getDocument(id)
-                    val input = doc.getBlob(name).contentStream
-                    if (input != null) it.onSuccess(input)
+                    val blob:Blob? = doc.getBlob(name)
+                    val input = blob?.contentStream
+                    if (input != null && blob != null) it.onSuccess(input!!)
                     else it.onComplete()
                 } catch (e: Exception) {
                     it.onError(e)

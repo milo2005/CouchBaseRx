@@ -42,8 +42,13 @@ class MainActivity : AppCompatActivity(), Injectable {
         super.onResume()
 
         dis add viewModel.getByProposito("leche")
+                .filter{ it.isNotEmpty() }
+                .flatMapMaybe {
+                    viewModel.getImage(it[0]._id!!, "gato.jpg") }
                 .subscribeBy(
                         onNext = {
+                            Picasso.get().load(it)
+                                    .into(img)
                             Log.i("hola", "")
                         },
                         onError = {
