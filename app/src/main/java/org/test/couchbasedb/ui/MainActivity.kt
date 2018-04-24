@@ -4,7 +4,11 @@ import android.arch.lifecycle.ViewModelProvider
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.couchbase.lite.Replicator
+import com.jakewharton.rxbinding2.view.clicks
+import com.squareup.picasso.Picasso
 import io.reactivex.rxkotlin.subscribeBy
+import kotlinx.android.synthetic.main.activity_main.*
 import org.test.couchbasedb.R
 import org.test.couchbasedb.data.model.Bovine
 import org.test.couchbasedb.data.model.BovineOwner
@@ -18,7 +22,12 @@ class MainActivity : AppCompatActivity(), Injectable {
     @Inject
     lateinit var factory: ViewModelProvider.Factory
 
+    @Inject
+    lateinit var replicator: Replicator
+
     val dis: LifeDisposable = LifeDisposable(this)
+
+    var counter: Int = 0
 
     val viewModel: Main2ViewModel by lazy { buildViewModel<Main2ViewModel>(factory) }
 
@@ -26,18 +35,53 @@ class MainActivity : AppCompatActivity(), Injectable {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val bovine = Bovine("Lupita", "Leche", BovineOwner("Dar", "301"))
 
-        viewModel.insert(bovine)
-                .flatMapMaybe { viewModel.getById(it) }
-                .flatMapSingle { viewModel.getByOwnerName("Fer") }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        dis add viewModel.getByProposito("leche")
                 .subscribeBy(
+                        onNext = {
+                            Log.i("hola", "")
+                        },
                         onError = {
-                            Log.i("Lupita", "")},
-                        onSuccess = {
-                            Log.i("Lupita", "")}
+                            Log.i("hola", "")
+                        },
+                        onComplete = {
+                            Log.i("hola", "")
+                        }
                 )
 
+        dis add btnInsert.clicks()
+                .flatMapSingle {
+                    counter++
+                    viewModel.insert(Bovine("bovine $counter", "leche", BovineOwner("dario", "301")))
+
+                }
+                .flatMapSingle {id-> viewModel.addImage(id, "gato.jpg", assets.open("gato.jpg"))}
+                .flatMapMaybe { viewModel.getImage(it.first, it.second) }
+                .subscribeBy(
+                        onNext = {
+                            Picasso.get().load(it)
+                                    .into(img)
+                        },
+                        onError = {
+                            Log.i("hola", "")
+                        },
+                        onComplete = {
+                            Log.i("hola", "")
+                        }
+                )
+
+        dis add btnChannel.clicks()
+                .subscribe {
+                    replicator.config.channels.add("123")
+                    replicator.stop()
+                    replicator.start()
+                    Log.i("hola", "")
+                }
 
     }
 }

@@ -5,6 +5,7 @@ import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.LifecycleOwner
 import android.arch.lifecycle.OnLifecycleEvent
 import io.reactivex.Maybe
+import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -35,6 +36,11 @@ fun <T> Single<T>.applySchedulers() = compose {
 }
 
 fun <T> Maybe<T>.applySchedulers() = compose {
+    it.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+}
+
+fun <T> Observable<T>.applySchedulers() = compose {
     it.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 }
