@@ -143,9 +143,10 @@ class CouchRxMapper @Inject constructor(private val db: Database,
             Maybe.create<InputStream> {
                 try {
                     val doc = db.getDocument(id)
-                    val blob:Blob? = doc.getBlob(name)
+                    val files:Dictionary? = doc.getDictionary("files")
+                    val blob:Blob? = files?.getBlob(name)
                     val input = blob?.contentStream
-                    if (input != null && blob != null) it.onSuccess(input!!)
+                    if (input != null && blob != null) it.onSuccess(input)
                     else it.onComplete()
                 } catch (e: Exception) {
                     it.onError(e)
@@ -190,13 +191,17 @@ class CouchRxMapper @Inject constructor(private val db: Database,
             Single.create {
                 try {
                     val document = db.getDocument(id).toMutable()
+                    val files:MutableDictionary = document.getDictionary("files") ?: MutableDictionary()
+
                     val blob = when (data) {
                         is InputStream -> Blob(contentType, data)
                         is ByteArray -> Blob(contentType, data)
                         is URL -> Blob(contentType, data)
                         else -> null
                     }
-                    document.setBlob(name, blob)
+
+                    files.setBlob(name, blob)
+                    document.setDictionary("files", files)
                     db.save(document)
                     (data as? InputStream)?.close()
                     it.onSuccess(id to name)
