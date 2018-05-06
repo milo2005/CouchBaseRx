@@ -1,10 +1,6 @@
 package org.test.couchbasedb.data.couch
 
-import android.content.Context
-import android.os.Environment
 import com.couchbase.lite.*
-import com.couchbase.lite.Array as cArray
-import com.couchbase.lite.Dictionary
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.reactivex.Maybe
 import io.reactivex.Observable
@@ -18,11 +14,11 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URL
-
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 import kotlin.reflect.KClass
+import com.couchbase.lite.Array as cArray
 
 @Singleton
 class CouchRxMapper @Inject constructor(private val db: Database,
@@ -71,6 +67,8 @@ class CouchRxMapper @Inject constructor(private val db: Database,
                 .select(SelectResult.all(), SelectResult.expression(Meta.id), SelectResult.expression(Meta.sequence))
                 .from(DataSource.database(db))
                 .where(expression andEx ("type" equalEx kClass.simpleName.toString()))
+
+
 
         it.onSuccess(query.execute())
     }

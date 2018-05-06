@@ -9,6 +9,7 @@ import org.test.couchbasedb.data.model.Bovine
 import org.test.couchbasedb.data.couch.CouchRxMapper
 import org.test.couchbasedb.util.applySchedulers
 import org.test.couchbasedb.util.equalEx
+import org.test.couchbasedb.util.inEx
 import org.test.couchbasedb.util.likeEx
 import java.io.File
 import java.io.InputStream
@@ -48,5 +49,10 @@ class Main2ViewModel @Inject constructor(private val db:CouchRxMapper):ViewModel
 
     fun getImage(id:String, field:String):Maybe<File> = db.getFile(id, field)
             .applySchedulers()
+
+    fun getBovinoByVacuna(vacuna:String):Single<List<Bovine>> =
+            db.listByExp("vacunas" inEx vacuna, Bovine::class)
+                    .applySchedulers()
+
 
 }
