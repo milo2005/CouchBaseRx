@@ -54,5 +54,10 @@ class Main2ViewModel @Inject constructor(private val db:CouchRxMapper):ViewModel
             db.listByExp("vacunas" inEx vacuna, Bovine::class)
                     .applySchedulers()
 
+    fun getBovinoByName(name:String):Single<List<Bovine>> =
+            db.listByExp("nombre" likeEx  name, Bovine::class)
+                    .applySchedulers()
+
+
 
 }

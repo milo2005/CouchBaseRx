@@ -25,9 +25,6 @@ class App : Application(), HasActivityInjector {
     override fun onCreate() {
         super.onCreate()
         AppInjector.init(this)
-        replicator.addChangeListener {
-            Log.i("","")
-        }
         replicator.start()
     }
 

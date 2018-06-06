@@ -44,3 +44,5 @@ fun <T> Observable<T>.applySchedulers() = compose {
     it.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 }
+
+infix fun Int.add(numero:Int) = this + numero

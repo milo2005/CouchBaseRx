@@ -52,6 +52,8 @@ class Main1ViewModel @Inject constructor(private val db: Database,
                         .equalTo(Expression.string("bovino"))
                         .and(Expression.property("proposito").equalTo(Expression.string(proposito))))
 
+
+
         return query.execute().toObservable()
                 .map {
 

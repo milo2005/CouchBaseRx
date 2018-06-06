@@ -85,13 +85,20 @@ class CouchRxMapper @Inject constructor(private val db: Database,
     fun listByQuery(query: Query): Single<ResultSet> =
             Single.create<ResultSet> { it.onSuccess(query.execute()) }
 
-    fun <T : Any> listByExp(expression: Expression, kClass: KClass<T>): Single<List<T>> = Single.create<ResultSet> {
+    fun <T : Any> listByExp(expression: Expression, kClass: KClass<T>, limit: Int? = null, skip: Int? = null): Single<List<T>> = Single.create<ResultSet> {
         val query = QueryBuilder
                 .select(SelectResult.all(), SelectResult.expression(Meta.id), SelectResult.expression(Meta.sequence))
                 .from(DataSource.database(db))
                 .where(expression andEx ("type" equalEx kClass.simpleName.toString()))
 
-        it.onSuccess(query.execute())
+        val result: ResultSet = if (limit != null && skip != null)
+            query.limit(Expression.intValue(limit), Expression.intValue(skip)).execute()
+        else if(limit!=null)
+            query.limit(Expression.intValue(limit)).execute()
+        else query.execute()
+
+
+        it.onSuccess(result)
     }
             .flatMapObservable { it.toObservable() }
             .map {
@@ -115,6 +122,10 @@ class CouchRxMapper @Inject constructor(private val db: Database,
                 .select(SelectResult.all(), SelectResult.expression(Meta.id), SelectResult.expression(Meta.sequence))
                 .from(DataSource.database(db))
                 .where(expression andEx ("type" equalEx kClass.simpleName.toString()))
+
+
+
+
         query.addChangeListener {
             if (it.error == null) emitter.onNext(it.results)
             else emitter.onError(it.error)
@@ -141,8 +152,8 @@ class CouchRxMapper @Inject constructor(private val db: Database,
             Maybe.create<InputStream> {
                 try {
                     val doc = db.getDocument(id)
-                    val files:Dictionary? = doc.getDictionary("files")
-                    val blob:Blob? = files?.getBlob(name)
+                    val files: Dictionary? = doc.getDictionary("files")
+                    val blob: Blob? = files?.getBlob(name)
                     val input = blob?.contentStream
                     if (input != null && blob != null) it.onSuccess(input)
                     else it.onComplete()
@@ -189,7 +200,8 @@ class CouchRxMapper @Inject constructor(private val db: Database,
             Single.create {
                 try {
                     val document = db.getDocument(id).toMutable()
-                    val files:MutableDictionary = document.getDictionary("files") ?: MutableDictionary()
+                    val files: MutableDictionary = document.getDictionary("files")
+                            ?: MutableDictionary()
 
                     val blob = when (data) {
                         is InputStream -> Blob(contentType, data)
@@ -200,6 +212,7 @@ class CouchRxMapper @Inject constructor(private val db: Database,
 
                     files.setBlob(name, blob)
                     document.setDictionary("files", files)
+
                     db.save(document)
                     (data as? InputStream)?.close()
                     it.onSuccess(id to name)
@@ -236,8 +249,6 @@ class CouchRxMapper @Inject constructor(private val db: Database,
         map["_sequence"] = sequence
         return mapper.convertValue(map, kClass.java)
     }
-
-
 
 
 }

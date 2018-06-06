@@ -1,17 +1,16 @@
 package org.test.couchbasedb.ui
 
 import android.arch.lifecycle.ViewModelProvider
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import com.bumptech.glide.Glide
 import com.couchbase.lite.Replicator
 import com.jakewharton.rxbinding2.view.clicks
 import com.squareup.picasso.Picasso
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.activity_main.*
 import org.test.couchbasedb.R
-import org.test.couchbasedb.data.model.Bovine
-import org.test.couchbasedb.data.model.BovineOwner
 import org.test.couchbasedb.di.Injectable
 import org.test.couchbasedb.util.LifeDisposable
 import org.test.couchbasedb.util.buildViewModel
@@ -41,10 +40,16 @@ class MainActivity : AppCompatActivity(), Injectable {
     override fun onResume() {
         super.onResume()
 
-        dis add viewModel.getByProposito("leche")
-               // .filter{ it.isNotEmpty() }
-               // .flatMapMaybe {
-                 //   viewModel.getImage(it[0]._id!!, "gato.jpg") }
+        dis add viewModel.getByOwnerName("dario")
+                .subscribe { list->
+                    Log.i("Entro", "Sisis")
+                }
+
+        /*dis add viewModel.getByProposito("leche")
+               .filter{
+                   it.isNotEmpty() }
+               .flatMapMaybe {
+                    viewModel.getImage(it[0]._id!!, "gato.jpg") }
                 .subscribeBy(
                         onNext = {
                             //Picasso.get().load(it)
@@ -57,15 +62,33 @@ class MainActivity : AppCompatActivity(), Injectable {
                         onComplete = {
                             Log.i("hola", "")
                         }
-                )
+                )*/
 
         dis add btnInsert.clicks()
+                .flatMapSingle { viewModel.getBovinoByName("bovine Lupita XX") }
+                .flatMapSingle { viewModel.addImage(it[0]._id!!, "gato2",assets.open("gato2.jpg") ) }
+                .flatMapMaybe { viewModel.getImage(it.first, it.second) }
+                .subscribeBy (
+                    onNext = {
+                        Picasso.get().load(it)
+                                .into(img)
+                    },
+                    onError = {
+                        Log.i("hola", "")
+                    },
+                    onComplete = {
+                        Log.i("hola", "")
+                    }
+                )
+
+
+        /*dis add btnInsert.clicks()
                 .flatMapSingle {
                     counter++
-                    viewModel.insert(Bovine("bovine $counter", "leche", BovineOwner("dario", "301")))
+                    viewModel.insert(Bovine("bovine Lupita XI", "leche", BovineOwner("dario", "301"), listOf()))
 
                 }
-                .flatMapSingle {id-> viewModel.addImage(id, "gato.jpg", assets.open("gato.jpg"))}
+                .flatMapSingle {id-> viewModel.addImage(id, "gato2", assets.open("gato.jpg"))}
                 .flatMapMaybe { viewModel.getImage(it.first, it.second) }
                 .subscribeBy(
                         onNext = {
@@ -78,7 +101,7 @@ class MainActivity : AppCompatActivity(), Injectable {
                         onComplete = {
                             Log.i("hola", "")
                         }
-                )
+                )*/
 
         dis add btnChannel.clicks()
                 .subscribe {
@@ -87,6 +110,8 @@ class MainActivity : AppCompatActivity(), Injectable {
                     replicator.start()
                     Log.i("hola", "")
                 }
+
+
 
     }
 }
